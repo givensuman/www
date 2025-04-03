@@ -7,12 +7,12 @@ import {
 } from "@react-three/postprocessing";
 import { Selection } from "@react-three/postprocessing";
 import { ThreeElements, useFrame } from "@react-three/fiber";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { Detailed } from "@react-three/drei";
 import { LOD, MathUtils } from "three";
 
-import { themes } from "./Theme";
+import useTheme, { themes } from "./Theme";
 
 import type { DecimatedModel } from "./types";
 
@@ -28,6 +28,8 @@ export default function Scene({
   depth?: number;
   easing?: (x: number) => number;
 } & ThreeElements["group"]) {
+  const [theme, setTheme] = useTheme();
+
   return (
     <group {...props}>
       <Selection>
@@ -51,14 +53,16 @@ export default function Scene({
             length: count,
           },
           (_, i) => {
-            let model = themes[i % themes.length].model;
+            let current = themes[i % themes.length];
 
             return (
               <SceneMember
+                onClick={() => setTheme(current.name)}
                 key={i}
-                model={model}
+                model={current.model}
                 index={i}
                 z={Math.round(easing(i / count) * depth)}
+                isActive={current.name === theme.name}
               />
             );
           },
@@ -72,6 +76,7 @@ function SceneMember({
   model: Model,
   index,
   z,
+  isActive = false,
   speed = 0.5,
   maxDepth = DEPTH_OF_FIELD,
   ...props
@@ -79,6 +84,7 @@ function SceneMember({
   model: DecimatedModel;
   index: number;
   z: number;
+  isActive: boolean;
   maxDepth?: number;
   speed?: number;
 } & ThreeElements["group"]) {
@@ -86,7 +92,7 @@ function SceneMember({
   const { viewport, camera } = useThree();
   const { width, height } = viewport.getCurrentViewport(camera, [0, 0, -z]);
 
-  const [hovered, setHover] = useState<boolean | null>(null);
+  const [hovered, setHovered] = useState(false);
 
   const [data] = useState({
     y: MathUtils.randFloatSpread(height * 2),
@@ -95,6 +101,10 @@ function SceneMember({
     rX: Math.random() * Math.PI,
     rZ: Math.random() * Math.PI,
   });
+
+  useEffect(() => {
+    document.body.style.cursor = hovered ? "pointer" : "default";
+  }, [hovered]);
 
   useFrame((state, dt) => {
     if (dt < 0.1)
@@ -117,10 +127,10 @@ function SceneMember({
   return (
     <group
       {...props}
-      onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
     >
-      <Select enabled={hovered!}>
+      <Select enabled={isActive}>
         <Detailed ref={ref} distances={[0, maxDepth / 2, maxDepth]}>
           <Model.near />
           <Model.mid />
