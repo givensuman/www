@@ -13,9 +13,11 @@ import { Detailed } from "@react-three/drei";
 import { LOD, MathUtils } from "three";
 
 import Computer from "../models/Computer";
-import { DecimatedModel } from "./types";
+import useTheme, { themes } from "./Theme";
 
-const DEPTH_OF_FIELD = 60;
+import type { DecimatedModel } from "./types";
+
+export const DEPTH_OF_FIELD = 60;
 
 export default function Scene({
   count = 80,
@@ -27,6 +29,8 @@ export default function Scene({
   depth?: number;
   easing?: (x: number) => number;
 } & ThreeElements["group"]) {
+  const [theme] = useTheme();
+
   return (
     <group {...props}>
       <Selection>
@@ -49,14 +53,18 @@ export default function Scene({
           {
             length: count,
           },
-          (_, i) => (
-            <SceneMember
-              key={i}
-              model={Computer}
-              index={i}
-              z={Math.round(easing(i / count) * depth)}
-            />
-          ),
+          (_, i) => {
+            let model = themes[i % themes.length].model;
+
+            return (
+              <SceneMember
+                key={i}
+                model={model}
+                index={i}
+                z={Math.round(easing(i / count) * depth)}
+              />
+            );
+          },
         )}
       </Selection>
     </group>

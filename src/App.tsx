@@ -3,7 +3,9 @@ import { AdaptiveDpr, AdaptiveEvents, Environment } from "@react-three/drei";
 import { useRef } from "react";
 import { Vector3 } from "three";
 
-import Scene from "./lib/Scene";
+import Scene, { DEPTH_OF_FIELD } from "./lib/Scene";
+import useTheme from "./lib/Theme";
+
 function Rig() {
   const { camera, pointer } = useThree();
   const position = useRef(new Vector3());
@@ -21,6 +23,8 @@ function Rig() {
 }
 
 export default function App() {
+  const [theme] = useTheme();
+
   return (
     <Canvas
       dpr={[1, 2]}
@@ -32,13 +36,18 @@ export default function App() {
         width: "100vw",
       }}
     >
-      <color attach="background" args={["#ffbf40"]} />
+      <color attach="background" args={[theme.background]} />
+      <ambientLight
+        color={theme.lighting}
+        intensity={0.5}
+        position={[0, 0, DEPTH_OF_FIELD / 2]}
+      />
       <spotLight
         position={[10, 20, 10]}
         penumbra={1}
         decay={0}
         intensity={3}
-        color="orange"
+        color={theme.lighting}
       />
       <Environment preset="apartment" />
       <AdaptiveDpr pixelated />
