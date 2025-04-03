@@ -12,8 +12,7 @@ import { useThree } from "@react-three/fiber";
 import { Detailed } from "@react-three/drei";
 import { LOD, MathUtils } from "three";
 
-import Computer from "../models/Computer";
-import useTheme, { themes } from "./Theme";
+import { themes } from "./Theme";
 
 import type { DecimatedModel } from "./types";
 
@@ -29,8 +28,6 @@ export default function Scene({
   depth?: number;
   easing?: (x: number) => number;
 } & ThreeElements["group"]) {
-  const [theme] = useTheme();
-
   return (
     <group {...props}>
       <Selection>
@@ -133,4 +130,3 @@ function SceneMember({
     </group>
   );
 }
-
